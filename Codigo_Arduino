@@ -1,0 +1,72 @@
+#include <ESP8266WiFi.h>
+
+#include<FirebaseArduino.h>
+
+//FIREBASE_HOST --- Your Firebase Project URL goes here without "http:" , "\" and "/"
+#define FIREBASE_HOST "https://testproyect1-4922c.firebaseio.com/"
+#define FIREBASE_AUTH "6STl4m8dur5pFzjFtFlqLvj2tU6sP2Tys1mdyUlm"//Your Firebase Database Secret goes here
+#define WIFI_SSID "SSID_NAME" //your WiFi SSID for which yout NodeMCU connects
+#define WIFI_PASSWORD "SSID_PASSWORD" //Password of your wifi network 
+
+#define Relay1 14 //D5
+
+int rel1;
+
+void setup() 
+{
+Serial.begin(9600); // Select the same baud rate if you want to see the datas on Serial Monitor
+pinMode(Relay1,OUTPUT);
+digitalWrite(Relay1,HIGH);
+
+WiFi.begin(WIFI_SSID,WIFI_PASSWORD);
+Serial.print("connecting");
+while (WiFi.status()!=WL_CONNECTED){
+Serial.print(".");
+delay(500);
+}
+Serial.println();
+Serial.print("connected:");
+Serial.println(WiFi.localIP());
+
+Firebase.begin(FIREBASE_HOST,FIREBASE_AUTH);
+//Here the varialbe"FB1" needs to be the one which is used in our Firebase and MIT 
+
+
+
+
+App Inventor
+Firebase.set("FB1",0);
+
+}
+void firebasereconnect()
+{
+Serial.println("Trying to reconnect");
+Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+}
+void loop() 
+{
+if (Firebase.failed())
+{
+Serial.print("setting number failed:");
+Serial.println(Firebase.error());
+firebasereconnect();
+return;
+}
+rel1=Firebase.getInt("FB1"); //Reading the value of the varialble Status from the firebase
+
+Serial.print("Database Data--");
+Serial.print(rel1);
+Serial.print("--");
+
+if(rel1==1) // If, the Status is 1, turn on the Relay1
+{
+digitalWrite(Relay1,LOW);
+Serial.println("Relay 1 ON");
+}
+if(rel1==0) // If, the Status is 0, turn Off the Relay1
+{ 
+digitalWrite(Relay1,HIGH);
+Serial.println("Relay 1 OFF");
+}
+
+}
